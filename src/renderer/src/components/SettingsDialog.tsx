@@ -69,17 +69,29 @@ export function SettingsDialog({ onClose }: Props) {
 
         <div className="settings-group toggle-group">
           <label>提示音</label>
-          <input type="checkbox" checked={soundEnabled} onChange={(e) => setSoundEnabled(e.target.checked)} />
+          <label className="toggle-switch">
+            <input type="checkbox" checked={soundEnabled} onChange={(e) => setSoundEnabled(e.target.checked)} />
+            <span className="toggle-track" />
+            <span className="toggle-thumb" />
+          </label>
         </div>
 
         <div className="settings-group toggle-group">
           <label>自动开始休息</label>
-          <input type="checkbox" checked={autoStartBreak} onChange={(e) => setAutoStartBreak(e.target.checked)} />
+          <label className="toggle-switch">
+            <input type="checkbox" checked={autoStartBreak} onChange={(e) => setAutoStartBreak(e.target.checked)} />
+            <span className="toggle-track" />
+            <span className="toggle-thumb" />
+          </label>
         </div>
 
         <div className="settings-group toggle-group">
           <label>自动开始专注</label>
-          <input type="checkbox" checked={autoStartWork} onChange={(e) => setAutoStartWork(e.target.checked)} />
+          <label className="toggle-switch">
+            <input type="checkbox" checked={autoStartWork} onChange={(e) => setAutoStartWork(e.target.checked)} />
+            <span className="toggle-track" />
+            <span className="toggle-thumb" />
+          </label>
         </div>
 
         <div className="settings-actions">

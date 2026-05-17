@@ -27,9 +27,9 @@ export const PHASE_LABELS: Record<Phase, string> = {
 }
 
 export const PHASE_COLORS: Record<Phase, string> = {
-  work: '#e74c3c',
-  shortBreak: '#2ecc71',
-  longBreak: '#3498db'
+  work: '#ff4757',
+  shortBreak: '#2ed573',
+  longBreak: '#1e90ff'
 }
 
 export interface DayStats {

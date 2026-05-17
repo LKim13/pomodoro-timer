@@ -12,7 +12,15 @@ import { StatsCalendar } from './components/StatsCalendar'
 import { DailyProgress } from './components/DailyProgress'
 import { TitleBar } from './components/TitleBar'
 import { PHASE_COLORS } from './types/timer'
+import type { Phase } from './types/timer'
 import './styles/global.css'
+import './styles/animations.css'
+
+const RING_TRACK_COLORS: Record<Phase, string> = {
+  work: 'rgba(60, 20, 30, 0.6)',
+  shortBreak: 'rgba(20, 60, 35, 0.6)',
+  longBreak: 'rgba(20, 35, 70, 0.6)',
+}
 
 export default function App() {
   useStoreSync()
@@ -23,12 +31,17 @@ export default function App() {
   const bgColor = PHASE_COLORS[phase]
 
   return (
-    <div className="app" style={{ '--phase-color': bgColor } as React.CSSProperties}>
+    <div className="app" style={{
+      '--phase-color': bgColor,
+      '--phase-color-soft': `${bgColor}40`,
+      '--phase-color-glow': `${bgColor}80`,
+      '--ring-track': RING_TRACK_COLORS[phase],
+    } as React.CSSProperties}>
       <TitleBar onSettings={() => setShowSettings(true)} />
       <DailyProgress />
 
-      {!showStats ? (
-        <div className="timer-view">
+      <div className="app-content">
+        <div className={`timer-view ${showStats ? 'view-hidden' : 'view-visible'}`}>
           <TimerDisplay />
           <PhaseIndicator />
           <TaskInput />
@@ -37,15 +50,14 @@ export default function App() {
             查看统计
           </button>
         </div>
-      ) : (
-        <div className="stats-view">
+        <div className={`stats-view ${showStats ? 'view-visible' : 'view-hidden'}`}>
           <StatsPanel />
           <StatsCalendar />
           <button className="btn-stats" onClick={() => setShowStats(false)}>
             返回计时
           </button>
         </div>
-      )}
+      </div>
 
       <SoundPlayer />
       {showSettings && <SettingsDialog onClose={() => setShowSettings(false)} />}

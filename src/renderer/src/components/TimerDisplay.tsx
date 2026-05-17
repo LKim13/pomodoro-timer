@@ -19,7 +19,6 @@ export function TimerDisplay() {
           className="timer-ring-bg"
           cx="130" cy="130" r="120"
           fill="none"
-          stroke="#2a2a4a"
           strokeWidth="8"
         />
         <circle

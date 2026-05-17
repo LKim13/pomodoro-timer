@@ -47,3 +47,7 @@ The timer uses **Date.now-based timing** — `startedAt` captures the start time
 - **Single instance**: `app.requestSingleInstanceLock()` prevents duplicate windows; `second-instance` event shows the existing window.
 - **Sound protocol**: A custom `sound://` protocol registered in the main process serves audio files from `resources/` via `net.fetch()`, because `<audio>` elements cannot play files inside an ASAR archive.
 - **electron-store v8**: Must remain at v8.x. v10+ is pure ESM and cannot be `require()`d by the CJS main process output.
+
+## Additional instruction
+- 当你需要对前端视觉进行修改的时候，去参考[text](品牌视觉规范)这个文件里的内容
+- 当你要写产品文字的时候，参考[text](语言规范)这个文件里的内容

@@ -1,0 +1,162 @@
+番茄钟桌面应用 - 实现计划
+
+ Context
+
+ 用户需要一个桌面番茄钟（Pomodoro Timer）应用，用于专注工作和休息管理。项目目录为空，属于全新项目。选择了 Electron + React 技术栈，界面语言为中文。
+
+ 技术栈
+
+ - 框架: Electron + React (electron-vite 构建)
+ - 状态管理: Zustand
+ - 数据持久化: electron-store
+ - 语言: TypeScript
+ - 样式: 自定义 CSS + CSS 自定义属性（无 Tailwind，保持轻量）
+ - 打包: electron-builder (NSIS installer for Windows)
+
+ 核心功能
+
+ 1. 番茄计时: 25min 专注 + 5min 短休息 + 15min 长休息，时长可自定义
+ 2. 任务统计: 记录每日完成番茄数，查看历史（30天热力图）
+ 3. 声音提醒: 计时结束播放提示音，可开关
+ 4. 系统托盘: 最小化到托盘，计时完成弹出系统通知
+
+ 项目结构
+
+ First-CC/
+ ├── package.json
+ ├── electron.vite.config.ts
+ ├── tsconfig.json / tsconfig.web.json / tsconfig.node.json
+ ├── resources/
+ │   ├── icon.ico                    # Windows 应用图标
+ │   ├── icon.png                    # 托盘图标
+ │   └── notification.mp3            # 提示音
+ ├── src/
+ │   ├── main/
+ │   │   ├── index.ts                # 主进程入口：app生命周期、单实例锁
+ │   │   ├── windows.ts              # BrowserWindow 创建、关闭隐藏逻辑
+ │   │   ├── tray.ts                 # 系统托盘：图标、菜单、动态tooltip
+ │   │   ├── notification.ts         # 系统通知助手
+ │   │   ├── ipc-handlers.ts         # IPC 通道注册
+ │   │   ├── store.ts                # electron-store 实例 + 数据schema
+ │   │   └── sound-protocol.ts       # sound:// 自定义协议注册
+ │   ├── preload/
+ │   │   ├── index.ts                # contextBridge.exposeInMainWorld API
+ │   │   └── index.d.ts              # Window.api 类型声明
+ │   └── renderer/
+ │       ├── index.html
+ │       └── src/
+ │           ├── main.tsx             # React 入口
+ │           ├── App.tsx              # 根组件：计时器 + 统计布局
+ │           ├── stores/
+ │           │   ├── timerStore.ts    # 计时器状态机（phase、countdown、transition）
+ │           │   ├── settingsStore.ts # 设置（时长、提示音、自动开始）
+ │           │   └── statsStore.ts    # 统计数据（每日番茄数、历史）
+ │           ├── components/
+ │           │   ├── TimerDisplay.tsx  # SVG 圆环进度 + MM:SS 显示
+ │           │   ├── TimerControls.tsx # 开始/暂停/跳过/重置按钮
+ │           │   ├── PhaseIndicator.tsx # 4个阶段序列指示器
+ │           │   ├── TaskInput.tsx      # 任务标签输入（专注时显示）
+ │           │   ├── StatsPanel.tsx     # 今日/本周统计数字
+ │           │   ├── StatsCalendar.tsx  # 30天热力图
+ │           │   ├── SettingsDialog.tsx # 设置弹窗（时长滑块、开关）
+ │           │   ├── SoundPlayer.tsx    # 隐藏 audio 元素播放提示音
+ │           │   ├── DailyProgress.tsx  # 今日完成数徽章
+ │           │   └── TitleBar.tsx       # 应用标题栏 + 设置齿轮
+ │           ├── hooks/
+ │           │   ├── useTimer.ts       # Date.now 基准的精确计时引擎
+ │           │   ├── useNotification.ts # IPC 通知触发
+ │           │   └── useStoreSync.ts   # zustand ↔ main 进程数据同步
+ │           ├── utils/
+ │           │   ├── formatTime.ts     # 秒 → MM:SS 格式化
+ │           │   └ phases.ts          # 阶段常量和转换逻辑
+ │           ├── types/
+ │           │   ├── timer.ts          # TimerState, Phase 类型
+ │           │   ├── ipc.ts            # IPC 通道名常量
+ │           │   ├── api.ts            # preload API 类型
+ │           ├── styles/
+ │           │   ├── global.css        # CSS变量、字体、全局样式
+ │           │   ├── timer.css         # SVG圆环动画、计时器布局
+ │           │   ├── animations.css    # 脉冲、过渡动画
+ └── .gitignore
+
+ 数据 Schema
+
+ // electron-store 存储
+ {
+   settings: {
+     workDuration: 25,           // 分钟
+     shortBreakDuration: 5,
+     longBreakDuration: 15,
+     soundEnabled: true,
+     autoStartBreak: false,
+     autoStartWork: false,
+     longBreakInterval: 4        // 每4个番茄后长休息
+   },
+   statistics: {
+     "2026-05-17": {             // key = YYYY-MM-DD
+       completedPomodoros: 3,
+       totalWorkMinutes: 75,
+       tasks: ["写代码", "写文档"]
+     }
+   }
+ }
+
+ 关键设计决策
+
+ 1. 计时精度: 用 Date.now() 差值计算已过时间，而非简单 setInterval 递减，防止窗口后台/系统休眠时计时漂移
+ 2. 关闭行为: 关闭窗口时隐藏而非退出（托盘模式），通过 isQuitting 标志区分真退出
+ 3. 音频播放: 注册 sound:// 自定义协议解决 ASAR 包内音频无法播放问题
+ 4. 单实例锁: app.requestSingleInstanceLock() 防止多窗口
+ 5. 数据安全: 所有持久化通过主进程 IPC，渲染器不直接写文件
+
+ UI 设计要点
+
+ - 暗色主题（深蓝底色 #1a1a2e），减少视觉干扰
+ - 圆环进度条：专注→红色，短休息→绿色，长休息→蓝色
+ - 阶段切换时颜色平滑过渡（CSS transition 500ms）
+ - 字体："Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif
+ - 窗口尺寸：420x560（紧凑计时器布局）
+
+ IPC 通道
+
+ ┌──────────────────────┬───────────────┬──────────────┐
+ │         通道         │     方向      │     用途     │
+ ├──────────────────────┼───────────────┼──────────────┤
+ │ store:getSettings    │ renderer→main │ 加载设置     │
+ ├──────────────────────┼───────────────┼──────────────┤
+ │ store:updateSettings │ renderer→main │ 保存设置     │
+ ├──────────────────────┼───────────────┼──────────────┤
+ │ store:getStatistics  │ renderer→main │ 加载统计     │
+ ├──────────────────────┼───────────────┼──────────────┤
+ │ store:recordPomodoro │ renderer→main │ 记录完成     │
+ ├──────────────────────┼───────────────┼──────────────┤
+ │ timer:notify         │ renderer→main │ 系统通知     │
+ ├──────────────────────┼───────────────┼──────────────┤
+ │ tray:updateTooltip   │ renderer→main │ 更新托盘文字 │
+ └──────────────────────┴───────────────┴──────────────┘
+
+ 实现步骤（按顺序）
+
+ 1. 项目脚手架：npm create @quick-start/electron (react-ts 模板) → 清理样板 → 安装 zustand、electron-store
+ 2. 主进程 store.ts：定义 schema 和默认值
+ 3. 主进程 windows.ts：BrowserWindow + 关闭隐藏逻辑
+ 4. 主进程 tray.ts：托盘图标、菜单、动态 tooltip
+ 5. 主进程 notification.ts + sound-protocol.ts
+ 6. 主进程 ipc-handlers.ts：注册所有 IPC 处理器
+ 7. 主进程 index.ts：app 生命周期编排
+ 8. preload/index.ts + index.d.ts：安全 API 桥接
+ 9. Zustand stores：timerStore → settingsStore → statsStore
+ 10. 工具函数：formatTime、phases
+ 11. Hooks：useTimer（核心计时引擎）、useNotification、useStoreSync
+ 12. 组件：TimerDisplay → TimerControls → PhaseIndicator → SoundPlayer → SettingsDialog → StatsPanel/StatsCalendar → TaskInput → App.tsx
+ 13. CSS：global.css → timer.css → animations.css
+ 14. 资源文件：提示音 mp3、图标 ico/png
+ 15. 打包配置：electron-builder NSIS 设置
+
+ 验证方式
+
+ - npm run dev 启动开发模式，验证计时器运行、阶段切换、通知弹窗
+ - 测试关闭窗口→托盘恢复→通知提醒完整流程
+ - 测试设置修改持久化（重启后设置保留）
+ - 测试统计数据记录和热力图显示
+ - npm run build && npm run package 生成安装包，验证打包后音频播放和通知正常
