@@ -1,0 +1,45 @@
+.timer-display {
+  position: relative;
+  width: 260px;
+  height: 260px;
+}
+
+.timer-ring {
+  width: 100%;
+  height: 100%;
+}
+
+.timer-ring-bg {
+  transition: none;
+}
+
+.timer-ring-progress {
+  transition: stroke-dashoffset 0.3s ease, stroke 0.5s ease;
+  filter: drop-shadow(0 0 8px var(--phase-color));
+}
+
+.timer-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.timer-time {
+  font-size: 4rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-label {
+  font-size: 14px;
+  margin-top: 4px;
+  transition: color 0.5s ease;
+}

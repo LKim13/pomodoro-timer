@@ -1,0 +1,52 @@
+{
+  "name": "pomodoro-timer",
+  "version": "1.0.0",
+  "description": "番茄钟桌面应用 - Pomodoro Timer",
+  "main": "./out/main/index.js",
+  "author": "",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "package": "electron-builder --win"
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
+    "electron-vite": "^2.3.0",
+    "typescript": "^5.6.0"
+  },
+  "build": {
+    "appId": "com.pomodoro-timer.app",
+    "productName": "番茄钟",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "resources/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "language": 2052
+    },
+    "asar": true,
+    "asarUnpack": [
+      "resources/**"
+    ],
+    "files": [
+      "out/**",
+      "resources/**"
+    ]
+  }
+}
